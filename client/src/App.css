@@ -1,0 +1,142 @@
+/* App.css */
+
+.app-container {
+    width: 40%;
+    /*max-width: 800px;*/
+    margin: 0 auto;
+    padding: 40px 60px;
+    text-align: center;
+    background-color: var(--color-surface);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+    min-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    animation: fadeIn 0.6s ease-out;
+}
+
+h1 {
+    color: var(--color-primary);
+    margin-bottom: 40px;
+    font-size: 3em;
+    letter-spacing: 1px;
+    animation: fadeIn 0.8s ease-out;
+}
+
+h2 {
+    color: var(--color-secondary);
+    margin-bottom: 30px;
+    font-size: 2.25em;
+    letter-spacing: 0.5px;
+    animation: fadeIn 0.8s ease-out;
+}
+
+input {
+    padding: 14px 16px;
+    margin: 12px 0;
+    border: 1px solid var(--color-bg-light);
+    border-radius: 8px;
+    font-size: 1.1em;
+    width: 100%;
+    max-width: 360px;
+    transition:
+        border-color var(--transition-speed),
+        box-shadow var(--transition-speed);
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 5px var(--color-primary);
+}
+
+button {
+    padding: 10px 20px;
+    margin: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: var(--color-primary);
+    color: white;
+    font-size: 1em;
+    cursor: pointer;
+    transition:
+        background-color var(--transition-speed),
+        transform 0.2s;
+}
+
+button:hover {
+    background-color: var(--color-secondary);
+    /*transform: translateY(-2px);*/
+}
+
+button:active {
+    /*transform: translateY(0);*/
+    animation: pulse 0.3s;
+}
+
+button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.player-list {
+    list-style: none;
+    padding: 0;
+}
+
+.player-list li {
+    background-color: #f0f4ff;
+    color: var(--color-text);
+    margin: 5px 0;
+    padding: 10px;
+    border-radius: 5px;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.movie-list {
+    list-style: none;
+    padding: 0;
+}
+
+.movie-list li {
+    background-color: #f0f4ff;
+    color: var(--color-text);
+    margin: 5px 0;
+    padding: 10px;
+    border-radius: 5px;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.voting-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.voting-buttons button {
+    font-size: 1.5em;
+}
+
+.results-list {
+    list-style: none;
+    padding: 0;
+}
+
+.results-list li {
+    background-color: #f0f4ff;
+    color: var(--color-text);
+    margin: 5px 0;
+    padding: 10px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.waiting {
+    font-style: italic;
+    color: #666;
+}

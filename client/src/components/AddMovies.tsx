@@ -1,0 +1,64 @@
+import { useState } from "react";
+import ws from "../socket.js";
+import { playerId } from "../socket.js";
+import {
+    WebSocketMessage as WSM,
+    type AddMovieData,
+    type StartVotingData,
+} from "../../../shared/ws_types.js";
+import type { Room } from "../../../shared/model/room.js";
+
+interface AddMoviesProps {
+    room: Room;
+}
+
+export default function AddMovies({ room }: AddMoviesProps) {
+    const [movie, setMovie] = useState<string>("");
+    const [movies, setMovies] = useState<string[]>([]);
+
+    function addMovie() {
+        if (!movie.trim()) return;
+        const data: AddMovieData = {
+            roomId: room.id,
+            title: movie.trim(),
+        };
+        setMovies([...movies, data.title]);
+        ws.emit(WSM.AddMovie, data);
+        setMovie("");
+    }
+
+    function startVoting() {
+        const data: StartVotingData = {
+            roomId: room.id,
+        };
+        ws.emit(WSM.StartVoting, data);
+    }
+
+    return (
+        <div className="app-container">
+            <h2>Add Movies</h2>
+
+            <input
+                value={movie}
+                onChange={(e) => setMovie(e.target.value)}
+                placeholder="Enter movie title"
+                onKeyDown={(e) => e.key === "Enter" && addMovie()}
+            />
+
+            <button onClick={addMovie} disabled={!movie.trim()}>
+                Add Movie
+            </button>
+
+            <ul className="movie-list">
+                {movies.map((title: string, index: number) => (
+                    <li key={index}>{title}</li>
+                ))}
+            </ul>
+
+            {playerId === room.host.id &&
+                movies.length > 0 && ( // maybe use room.movies instead but it is currently only synced after add phase is finished
+                    <button onClick={startVoting}>Start Voting</button>
+                )}
+        </div>
+    );
+}
