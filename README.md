@@ -60,7 +60,7 @@ npm install
 npx tsx index.ts
 ```
 
-Backend runs on `http://localhost:3001` by default. Change `shared/config.ts` if needed.
+Backend runs on `http://localhost:3001` by default. Change `shared/config.ts` if needed. \
 CORS is configured with `*`, allowing requests from any origin by default. Change in `server/src/index.ts` if needed.
 
 ---
@@ -93,6 +93,7 @@ TODO update
 - Timer for voting phase
 
 - Prevent duplicate votes per player
+- Remove players from room after inactivity / delete empty rooms
 - Handle reconnects / refresh correctly
 - Host migration if host disconnects
 

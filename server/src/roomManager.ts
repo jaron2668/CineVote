@@ -4,13 +4,13 @@ import { generateRandomCode } from "./utils.js";
 
 export const rooms: Record<string, Room> = {};
 
-export function createRoom(host: Player): string {
+export function createRoom(hostId: string): string {
     const roomId = generateRandomCode(); // TODO: check if code is already in use
 
     const room: Room = {
         id: roomId,
-        host: host,
-        players: [host],
+        hostId,
+        players: [],
         movies: {},
         phase: "lobby",
         finishedPlayers: [],
@@ -32,7 +32,7 @@ export function getRoom(roomId: string): Room | null {
     return rooms[roomId] || null;
 }
 
-export function removePlayerFromRoom(roomId: string, playerId: string): void {
+/*export function removePlayerFromRoom(roomId: string, playerId: string): void {
     const room = rooms[roomId];
     if (!room) return;
 
@@ -43,4 +43,4 @@ export function removePlayerFromRoom(roomId: string, playerId: string): void {
             delete rooms[roomId];
         }
     }
-}
+}*/

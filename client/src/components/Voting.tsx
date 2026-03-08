@@ -54,7 +54,7 @@ export default function Voting({ room }: VotingProps) {
                 <div className="waiting">
                     Voting finished. Waiting for other players...
                 </div>
-                {playerId === room.host.id && (
+                {playerId === room.hostId && (
                     <div>
                         <button onClick={forceEndVoting}>
                             Force End of Voting

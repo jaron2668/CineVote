@@ -3,7 +3,7 @@ import type { Movie } from "./movie.js";
 
 export interface Room {
     id: string;
-    host: Player;
+    hostId: string;
     players: Player[];
     movies: Record<string, Movie>;
 

@@ -55,7 +55,7 @@ export default function AddMovies({ room }: AddMoviesProps) {
                 ))}
             </ul>
 
-            {playerId === room.host.id &&
+            {playerId === room.hostId &&
                 movies.length > 0 && ( // maybe use room.movies instead but it is currently only synced after add phase is finished
                     <button onClick={startVoting}>Start Voting</button>
                 )}

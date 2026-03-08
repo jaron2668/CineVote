@@ -1,23 +1,35 @@
-export enum WebSocketMessage {
-    CreateRoom = "createRoom",
-    JoinRoom = "joinRoom",
-    RoomUpdate = "roomUpdate",
-    StartAddPhase = "startAddPhase",
-    AddMovie = "addMovie",
-    StartVoting = "startVoting",
-    PlayerVote = "playerVote",
-    PlayerFinishedVoting = "playerFinishedVoting",
-    ForceFinishVoting = "forceFinishVoting",
-}
+export const WebSocketMessage = {
+    CreateRoom: "createRoom",
+    GetRoomStatus: "getRoomStatus",
+    GetPlayerInRoomStatus: "getPlayerInRoomStatus",
+    JoinRoom: "joinRoom",
+    RejoinRoom: "rejoinRoom",
+    RoomUpdate: "roomUpdate",
+    StartAddPhase: "startAddPhase",
+    AddMovie: "addMovie",
+    StartVoting: "startVoting",
+    PlayerVote: "playerVote",
+    PlayerFinishedVoting: "playerFinishedVoting",
+    ForceFinishVoting: "forceFinishVoting",
+    BackToLobbyState: "backToLobbyState",
+} as const;
+
+// Type for TypeScript
+export type WebSocketMessage =
+    (typeof WebSocketMessage)[keyof typeof WebSocketMessage];
 
 export type CreateRoomData = {
-    playerName: string;
+    //playerId: string;
 };
 export type CreateRoomCallback = (roomCode: string) => void;
 
 export type JoinRoomData = {
     roomId: string;
     playerName: string;
+};
+
+export type RejoinRoomData = {
+    roomId: string;
 };
 
 export type StartAddPhaseData = {
@@ -43,5 +55,24 @@ export type PlayerFinishedVotingData = {
     roomId: string;
 };
 export type ForceFinishVotingData = {
+    roomId: string;
+};
+
+export type GetRoomStatusData = {
+    roomId: string;
+};
+export type GetRoomStatusCallback = (
+    result: "non-existent" | "lobby" | "ingame",
+) => void;
+
+export type GetPlayerInRoomStatusData = {
+    roomId: string;
+    playerId: string;
+};
+export type GetPlayerInRoomStatusCallback = (
+    result: "joined" | "not-joined" | "invalid-room",
+) => void;
+
+export type BackToLobbyStateData = {
     roomId: string;
 };

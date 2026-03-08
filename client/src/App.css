@@ -81,6 +81,10 @@ button:disabled {
     cursor: not-allowed;
 }
 
+.error-text {
+    color: red;
+}
+
 .player-list {
     list-style: none;
     padding: 0;
