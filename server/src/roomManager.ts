@@ -15,6 +15,7 @@ export function createRoom(hostId: string): string {
         players: [],
         movies: {},
         phase: "lobby",
+        phaseEndTime: -1,
         finishedPlayers: [],
     };
 
@@ -50,7 +51,16 @@ export function removePlayerFromRoom(
         room.players.splice(playerIndex, 1);
         if (room.players.length === 0) {
             delete rooms[roomId];
+            console.log(`Deleted room ${roomId}`);
         }
     }
     return true;
+}
+
+export function resetToLobby(roomId: string) {
+    const room = getRoom(roomId);
+    if (!room) return;
+    room.phase = "lobby";
+    room.finishedPlayers = [];
+    room.phaseEndTime = -1;
 }

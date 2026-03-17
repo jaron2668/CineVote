@@ -8,6 +8,7 @@ export interface Room {
     movies: Record<string, Movie>;
 
     phase: "lobby" | "add" | "vote" | "results";
+    phaseEndTime: number;
 
     finishedPlayers: string[]; // id's of players that finished voting
 }

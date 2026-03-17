@@ -1,5 +1,4 @@
 import { Server } from "socket.io";
-import type { Room } from "../../shared/model/room.js";
 import type { Player } from "../../shared/model/player.js";
 import type { Movie } from "../../shared/model/movie.js";
 import {
@@ -25,7 +24,21 @@ import {
     joinRoom,
     getRoom,
     removePlayerFromRoom,
+    resetToLobby,
 } from "./roomManager.js";
+import { addPhaseTime } from "../../shared/config.js";
+
+function emitRoomUpdate(wss: Server, roomId: string, room: any): void {
+    wss.to(roomId).emit(WSM.RoomUpdate, room);
+}
+
+function isHostAuth(ws: any, room: any): boolean {
+    return room.hostId === ws.data.playerId;
+}
+
+function isPhase(room: any, expectedPhase: string): boolean {
+    return room.phase === expectedPhase;
+}
 
 export function setupWebSocketHandlers(wss: Server): void {
     wss.on("connection", (ws) => {
@@ -34,16 +47,19 @@ export function setupWebSocketHandlers(wss: Server): void {
         );
 
         // disconnect handling
-        ws.on("disconnect", () => {
+        /*ws.on("disconnect", () => {
             for (const roomId in rooms) {
                 const room = getRoom(roomId);
                 if (room!.phase !== "lobby") continue;
                 removePlayerFromRoom(roomId, ws.data.playerId);
+                console.log(
+                    `Player ${ws.data.playerId} disconnected from room ${roomId}`,
+                );
                 if (room) {
                     wss.to(roomId).emit(WSM.RoomUpdate, room);
                 }
             }
-        });
+        });*/
 
         // a player creates a new room
         ws.on(
@@ -103,7 +119,7 @@ export function setupWebSocketHandlers(wss: Server): void {
             ws.join(roomId);
 
             // update room for clients
-            wss.to(roomId).emit(WSM.RoomUpdate, room);
+            emitRoomUpdate(wss, roomId, room);
         });
 
         // player rejoins room
@@ -122,12 +138,13 @@ export function setupWebSocketHandlers(wss: Server): void {
 
         // player leaves room
         ws.on(WSM.LeaveRoom, ({ roomId }: LeaveRoomData) => {
-            const room = rooms[roomId];
+            const room = getRoom(roomId);
             if (!room) return;
 
             if (removePlayerFromRoom(room.id, ws.data.playerId)) {
+                console.log(`Player ${ws.data.playerId} left room ${roomId}`);
                 ws.leave(roomId);
-                wss.to(roomId).emit(WSM.RoomUpdate, room);
+                emitRoomUpdate(wss, roomId, room);
             }
         });
 
@@ -135,11 +152,21 @@ export function setupWebSocketHandlers(wss: Server): void {
         ws.on(WSM.StartAddPhase, ({ roomId }: StartAddPhaseData) => {
             const room = getRoom(roomId);
             if (!room) return;
-            if (room.hostId !== ws.data.playerId) return;
-            if (room.phase !== "lobby") return;
+            if (!isHostAuth(ws, room)) return;
+            if (!isPhase(room, "lobby")) return;
 
             room.phase = "add";
-            wss.to(roomId).emit(WSM.RoomUpdate, room);
+            const now = Date.now();
+            room.phaseEndTime = now + addPhaseTime;
+
+            setTimeout(() => {
+                const room = getRoom(roomId);
+                if (!room || !isPhase(room, "add")) return;
+                room.phase = "vote";
+                emitRoomUpdate(wss, roomId, room);
+            }, addPhaseTime);
+
+            emitRoomUpdate(wss, roomId, room);
         });
 
         // player adds a movie
@@ -164,17 +191,17 @@ export function setupWebSocketHandlers(wss: Server): void {
                 console.log("room does not exist.");
                 return;
             }
-            if (room.hostId !== ws.data.playerId) {
+            if (!isHostAuth(ws, room)) {
                 console.log("message is not from host.");
                 return;
             }
-            if (room.phase !== "add") {
+            if (!isPhase(room, "add")) {
                 console.log("current phase is not add phase.");
                 return;
             }
 
             room.phase = "vote";
-            wss.to(roomId).emit(WSM.RoomUpdate, room);
+            emitRoomUpdate(wss, roomId, room);
         });
 
         // player vote for a single movie
@@ -196,7 +223,7 @@ export function setupWebSocketHandlers(wss: Server): void {
             ({ roomId }: PlayerFinishedVotingData) => {
                 const room = getRoom(roomId);
                 if (!room) return;
-                if (room.phase !== "vote") return;
+                if (!isPhase(room, "vote")) return;
                 // TODO: check if player was already finished
 
                 room.finishedPlayers.push(ws.data.playerId);
@@ -204,7 +231,7 @@ export function setupWebSocketHandlers(wss: Server): void {
                 // switch to next phase if all players finished voting
                 if (room.finishedPlayers.length === room.players.length) {
                     room.phase = "results";
-                    wss.to(roomId).emit(WSM.RoomUpdate, room);
+                    emitRoomUpdate(wss, roomId, room);
                 }
             },
         );
@@ -213,19 +240,18 @@ export function setupWebSocketHandlers(wss: Server): void {
         ws.on(WSM.ForceFinishVoting, ({ roomId }: ForceFinishVotingData) => {
             const room = getRoom(roomId);
             if (!room) return;
-            if (room.hostId !== ws.data.playerId) return;
-            if (room.phase !== "vote") return;
+            if (!isHostAuth(ws, room)) return;
+            if (!isPhase(room, "vote")) return;
             room.phase = "results";
-            wss.to(roomId).emit(WSM.RoomUpdate, room);
+            emitRoomUpdate(wss, roomId, room);
         });
 
         ws.on(WSM.BackToLobbyState, ({ roomId }: BackToLobbyStateData) => {
-            const room = rooms[roomId];
+            const room = getRoom(roomId);
             if (!room) return;
-            if (ws.data.playerId !== room.hostId) return;
-            room.phase = "lobby";
-            room.finishedPlayers = [];
-            wss.to(roomId).emit(WSM.RoomUpdate, room);
+            if (!isHostAuth(ws, room)) return;
+            resetToLobby(roomId);
+            emitRoomUpdate(wss, roomId, room);
         });
     });
 }
