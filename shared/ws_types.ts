@@ -3,6 +3,7 @@ export const WebSocketMessage = {
     GetRoomStatus: "getRoomStatus",
     GetPlayerInRoomStatus: "getPlayerInRoomStatus",
     JoinRoom: "joinRoom",
+    LeaveRoom: "leaveRoom",
     RejoinRoom: "rejoinRoom",
     RoomUpdate: "roomUpdate",
     StartAddPhase: "startAddPhase",
@@ -26,6 +27,10 @@ export type CreateRoomCallback = (roomCode: string) => void;
 export type JoinRoomData = {
     roomId: string;
     playerName: string;
+};
+
+export type LeaveRoomData = {
+    roomId: string;
 };
 
 export type RejoinRoomData = {

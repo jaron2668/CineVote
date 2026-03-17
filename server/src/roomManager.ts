@@ -7,6 +7,8 @@ export const rooms: Record<string, Room> = {};
 export function createRoom(hostId: string): string {
     const roomId = generateRandomCode(); // TODO: check if code is already in use
 
+    console.log(`Creating room with hostId: ${hostId}, roomId: ${roomId}`);
+
     const room: Room = {
         id: roomId,
         hostId,
@@ -22,8 +24,12 @@ export function createRoom(hostId: string): string {
 
 export function joinRoom(roomId: string, player: Player): Room | null {
     const room = rooms[roomId];
-    if (!room) return null;
+    if (!room) {
+        console.log(`Failed to join room: room ${roomId} does not exist`);
+        return null;
+    }
 
+    console.log(`Player ${player.id} (${player.name}) joining room ${roomId}`);
     room.players.push(player);
     return room;
 }
@@ -32,9 +38,12 @@ export function getRoom(roomId: string): Room | null {
     return rooms[roomId] || null;
 }
 
-/*export function removePlayerFromRoom(roomId: string, playerId: string): void {
+export function removePlayerFromRoom(
+    roomId: string,
+    playerId: string,
+): boolean {
     const room = rooms[roomId];
-    if (!room) return;
+    if (!room) return false;
 
     const playerIndex = room.players.findIndex((p) => p.id === playerId);
     if (playerIndex !== -1) {
@@ -43,4 +52,5 @@ export function getRoom(roomId: string): Room | null {
             delete rooms[roomId];
         }
     }
-}*/
+    return true;
+}

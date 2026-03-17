@@ -17,8 +17,15 @@ import {
     type GetPlayerInRoomStatusCallback,
     type RejoinRoomData,
     type BackToLobbyStateData,
+    type LeaveRoomData,
 } from "../../shared/ws_types.js";
-import { rooms, createRoom, joinRoom, getRoom } from "./roomManager.js";
+import {
+    rooms,
+    createRoom,
+    joinRoom,
+    getRoom,
+    removePlayerFromRoom,
+} from "./roomManager.js";
 
 export function setupWebSocketHandlers(wss: Server): void {
     wss.on("connection", (ws) => {
@@ -27,15 +34,16 @@ export function setupWebSocketHandlers(wss: Server): void {
         );
 
         // disconnect handling
-        /*ws.on("disconnect", () => {
+        ws.on("disconnect", () => {
             for (const roomId in rooms) {
-                removePlayerFromRoom(roomId, ws.data.playerId);
                 const room = getRoom(roomId);
+                if (room!.phase !== "lobby") continue;
+                removePlayerFromRoom(roomId, ws.data.playerId);
                 if (room) {
                     wss.to(roomId).emit(WSM.RoomUpdate, room);
                 }
             }
-        });*/
+        });
 
         // a player creates a new room
         ws.on(
@@ -44,6 +52,7 @@ export function setupWebSocketHandlers(wss: Server): void {
                 {} /*playerId*/ : CreateRoomData,
                 callback: CreateRoomCallback,
             ) => {
+                console.log(`Creating a room for player ${ws.data.playerId}`);
                 const roomId = createRoom(ws.data.playerId);
 
                 // add player websocket to room
@@ -109,6 +118,17 @@ export function setupWebSocketHandlers(wss: Server): void {
             ws.join(roomId);
 
             wss.to(ws.id).emit(WSM.RoomUpdate, room); // players might get movie list early but it doesn't really matter
+        });
+
+        // player leaves room
+        ws.on(WSM.LeaveRoom, ({ roomId }: LeaveRoomData) => {
+            const room = rooms[roomId];
+            if (!room) return;
+
+            if (removePlayerFromRoom(room.id, ws.data.playerId)) {
+                ws.leave(roomId);
+                wss.to(roomId).emit(WSM.RoomUpdate, room);
+            }
         });
 
         // host switches to add phase

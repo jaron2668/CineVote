@@ -2,11 +2,13 @@ import ws from "../socket.js";
 import { playerId } from "../socket.js";
 import {
     WebSocketMessage as WSM,
+    type LeaveRoomData,
     type StartAddPhaseData,
 } from "../../../shared/ws_types.js";
 import type { Player } from "../../../shared/model/player.js";
 import type { Room } from "../../../shared/model/room.js";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface LobbyProps {
     room: Room;
@@ -19,6 +21,8 @@ export default function Lobby({ room }: LobbyProps) {
         };
         ws.emit(WSM.StartAddPhase, data);
     }
+
+    const navigate = useNavigate();
 
     const [copied, setCopied] = useState<boolean>(false);
 
@@ -33,12 +37,23 @@ export default function Lobby({ room }: LobbyProps) {
         }
     };
 
+    const leave = () => {
+        const data: LeaveRoomData = {
+            roomId: room.id,
+        };
+        ws.emit(WSM.LeaveRoom, data);
+        navigate("/");
+    };
+
     return (
         <div className="app-container">
             <div>
                 <h2>Room: {room.id}</h2>
                 <button onClick={copyLink}>
                     {copied ? "Copied!" : "Copy Room Link"}
+                </button>
+                <button className="leave-btn" onClick={leave}>
+                    Leave Room
                 </button>
             </div>
             <ul className="player-list">

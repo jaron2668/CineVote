@@ -88,13 +88,13 @@ TODO update
 
 - Fancier frontend
   (- Use external API for movie suggestions (TMDb, OMDb))
-- /roomcode to instantly connect to room
 - Ready button for add phase
 - Timer for voting phase
+- Allow host to kick players in lobby
+  (- Avatar creator)
 
 - Prevent duplicate votes per player
 - Remove players from room after inactivity / delete empty rooms
-- Handle reconnects / refresh correctly
 - Host migration if host disconnects
 
 ---
