@@ -1,3 +1,7 @@
+/**
+ * WebSocket message types used in CineVote communication
+ * These are the event names for all client-server communications.
+ */
 export const WebSocketMessage = {
     CreateRoom: "createRoom",
     GetRoomStatus: "getRoomStatus",
@@ -13,6 +17,8 @@ export const WebSocketMessage = {
     PlayerFinishedVoting: "playerFinishedVoting",
     ForceFinishVoting: "forceFinishVoting",
     BackToLobbyState: "backToLobbyState",
+    KickPlayer: "kickPlayer",
+    PlayerKicked: "playerKicked",
 } as const;
 
 // Type for TypeScript
@@ -80,4 +86,9 @@ export type GetPlayerInRoomStatusCallback = (
 
 export type BackToLobbyStateData = {
     roomId: string;
+};
+
+export type KickPlayerData = {
+    roomId: string;
+    playerId: string;
 };

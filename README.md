@@ -20,7 +20,7 @@ Users can create rooms, invite others via a room code, add movie suggestions, vo
 ## 🖥 Tech Stack
 
 - **Frontend:** React, TypeScript, Vite
-- **Backend:** Node.js, Express, Socket.IO
+- **Backend:** Node.js, Socket.IO
 - **Realtime:** WebSockets via Socket.IO
 
 ---
@@ -87,11 +87,9 @@ TODO update
 ## Future Improvements
 
 - Fancier frontend
-  (- Use external API for movie suggestions (TMDb, OMDb))
+- (Use external API for movie suggestions)
 - Ready button for add phase
-- Timer for voting phase
-- Allow host to kick players in lobby
-  (- Avatar creator)
+- (Avatar creator)
 
 - Prevent duplicate votes per player
 - Remove players from room after inactivity / delete empty rooms

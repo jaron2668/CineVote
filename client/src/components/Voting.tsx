@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ws, { playerId } from "../socket.js";
 import {
     WebSocketMessage as WSM,
@@ -48,9 +48,30 @@ export default function Voting({ room }: VotingProps) {
         ws.emit(WSM.ForceFinishVoting, data);
     }
 
+    const [remainingTime, setRemainingTime] = useState(-1);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const rem = room.phaseEndTime - Date.now();
+            setRemainingTime(rem);
+        }, 500); // refresh every 500 ms
+
+        return () => clearInterval(interval);
+    }, [room.phaseEndTime]);
+
+    const formatTime = (ms: number) => {
+        const minutes = Math.floor(ms / 60000);
+        const seconds = Math.floor((ms % 60000) / 1000);
+        //const milliseconds = Math.floor((ms % 1000) / 100);
+
+        //return `${minutes}:${seconds.toString().padStart(2, "0")}.${milliseconds}`;
+        return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+    };
+
     if (finished) {
         return (
             <div className="app-container">
+                <div>Remaining Time: {formatTime(remainingTime)}</div>
                 <div className="waiting">
                     Voting finished. Waiting for other players...
                 </div>
@@ -67,6 +88,7 @@ export default function Voting({ room }: VotingProps) {
 
     return (
         <div className="app-container">
+            <div>Remaining Time: {formatTime(remainingTime)}</div>
             <h2>{movie.title}</h2>
 
             <div className="voting-buttons">

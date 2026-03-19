@@ -89,6 +89,19 @@ button:disabled {
     background-color: rgb(252, 65, 3);
 }
 
+.kick-btn {
+    background-color: #ff6b6b;
+    padding: 5px 10px;
+    margin-left: 10px;
+    font-size: 0.9em;
+    min-width: auto;
+    width: auto;
+}
+
+.kick-btn:hover {
+    background-color: #ff4444;
+}
+
 .player-list {
     list-style: none;
     padding: 0;
@@ -101,6 +114,9 @@ button:disabled {
     padding: 10px;
     border-radius: 5px;
     animation: fadeIn 0.5s ease-out;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .movie-list {
