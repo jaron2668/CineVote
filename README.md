@@ -86,6 +86,7 @@ TODO update
 
 ## Future Improvements
 
+- Popup for kicked player
 - Fancier frontend
 - (Use external API for movie suggestions)
 - Ready button for add phase

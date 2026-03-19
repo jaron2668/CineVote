@@ -217,15 +217,28 @@ const handleBackToLobbyState =
 
 const handleKickPlayer =
     (wss: Server, ws: any) =>
-    ({ roomId, playerId }: KickPlayerData) => {
+    async ({ roomId, playerId }: KickPlayerData) => {
         const room = getServerRoom(roomId);
         if (!room) return;
         if (!isHostAuth(ws, room)) return;
         if (room.phase !== "lobby") return;
 
-        removePlayerFromRoom(roomId, playerId);
-        wss.to(playerId).emit(WSM.PlayerKicked);
-        emitRoomUpdate(wss, roomId, room);
+        if (removePlayerFromRoom(roomId, playerId)) {
+            console.log(`Player ${playerId} kicked from room ${roomId}`);
+            // remove player socket from room
+            const sockets = await wss.in(roomId).fetchSockets();
+
+            for (const s of sockets) {
+                // should only be one entry
+                if (s.data.playerId === playerId) {
+                    s.leave(roomId);
+                    s.emit(WSM.PlayerKicked);
+                    break;
+                }
+            }
+            //wss.to(playerId).emit(WSM.PlayerKicked);
+            emitRoomUpdate(wss, roomId, room);
+        }
     };
 
 // === setup function ===
