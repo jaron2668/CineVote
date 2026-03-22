@@ -10,6 +10,8 @@ import type { Player } from "../../../shared/model/player.js";
 import type { Room } from "../../../shared/model/room.js";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Modal from "@mui/material/Modal";
+import Box from "@mui/material/Box";
 
 interface LobbyProps {
     room: Room;
@@ -18,11 +20,12 @@ interface LobbyProps {
 export default function Lobby({ room }: LobbyProps) {
     const navigate = useNavigate();
     const [copied, setCopied] = useState<boolean>(false);
+    const [showKickedPopup, setShowKickedPopup] = useState<boolean>(false);
 
     // Handle being kicked from lobby
     useEffect(() => {
         const handleKicked = () => {
-            navigate("/");
+            setShowKickedPopup(true);
         };
 
         ws.on(WSM.PlayerKicked, handleKicked);
@@ -66,8 +69,21 @@ export default function Lobby({ room }: LobbyProps) {
         ws.emit(WSM.KickPlayer, data);
     };
 
+    const acceptKick = () => {
+        navigate("/");
+    };
+
     return (
         <div className="app-container">
+            <Modal open={showKickedPopup} onClose={acceptKick}>
+                <Box className="modal-box">
+                    <h2 className="modal-title">
+                        You got kicked from this lobby
+                    </h2>
+                    <button onClick={acceptKick}>Back to home</button>
+                </Box>
+            </Modal>
+
             <div>
                 <h2>Room: {room.id}</h2>
                 <button onClick={copyLink}>

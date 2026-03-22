@@ -164,3 +164,26 @@ button:disabled {
     font-style: italic;
     color: #666;
 }
+
+.modal-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    background-color: white;
+    border: 2px solid #000;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    padding: 16px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    margin-bottom: 8px;
+    color: red;
+}
