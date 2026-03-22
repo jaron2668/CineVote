@@ -109,7 +109,7 @@ export default function Lobby({ room }: LobbyProps) {
                 ))}
             </ul>
 
-            {room.host && (
+            {room.host && room.players.length > 1 && (
                 <button onClick={startAddPhase}>Start Adding Movies</button>
             )}
         </div>
