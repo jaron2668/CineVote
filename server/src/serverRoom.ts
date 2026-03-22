@@ -1,4 +1,5 @@
 import type { Room } from "../../shared/model/room.js";
+import type { ServerMovie } from "./serverMovie.js";
 
 /**
  * Server-side room class that extends the shared Room interface
@@ -17,7 +18,7 @@ export class ServerRoom implements Room {
     id: string;
     hostId: string;
     players: any[];
-    movies: Record<string, any>;
+    movies: Record<string, ServerMovie>;
     phase: "lobby" | "add" | "vote" | "results";
     phaseEndTime: number;
     finishedPlayers: string[];
@@ -115,7 +116,12 @@ export class ServerRoom implements Room {
             id: this.id,
             hostId: this.hostId,
             players: this.players,
-            movies: this.movies,
+            movies: Object.fromEntries(
+                Object.entries(this.movies).map(([key, serverMovie]) => [
+                    key,
+                    serverMovie.toMovie(),
+                ]),
+            ),
             phase: this.phase,
             phaseEndTime: this.phaseEndTime,
             finishedPlayers: this.finishedPlayers,

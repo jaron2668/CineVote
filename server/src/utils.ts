@@ -8,5 +8,5 @@
  * ```
  */
 export function generateRandomCode(): string {
-    return Math.random().toString(36).substring(2, 6).toUpperCase(); // TODO: check for collisions
+    return Math.random().toString(36).substring(2, 6).toUpperCase();
 }

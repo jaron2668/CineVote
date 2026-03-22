@@ -40,18 +40,21 @@ export function createRoom(hostId: string): string {
  *
  * @param {string} roomId - The room code
  * @param {Player} player - The player to add
- * @returns {Room | null} The shared room data if successful, null if room doesn't exist
+ * @returns {Room | null} The shared room data if successful, null if room doesn't exist or player already joined
  */
 export function joinRoom(roomId: string, player: Player): Room | null {
-    const room = rooms[roomId];
+    const room = getRoom(roomId);
     if (!room) {
         console.log(`Failed to join room: room ${roomId} does not exist`);
+        return null;
+    }
+    if (room.players.includes(player)) {
         return null;
     }
 
     console.log(`Player ${player.id} (${player.name}) joining room ${roomId}`);
     room.players.push(player);
-    return room.toRoom();
+    return room;
 }
 
 /**

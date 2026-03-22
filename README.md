@@ -86,14 +86,13 @@ TODO update
 
 ## Future Improvements
 
-- Popup for kicked player
 - Fancier frontend
+- Cut down send room data (e.g. exclude all playerId's)
 - (Use external API for movie suggestions)
-- Ready button for add phase
+- Option for ready button in add phase instead of fixed timer
 - (Avatar creator)
 
-- Prevent duplicate votes per player
-- Remove players from room after inactivity / delete empty rooms
+- Remove players from room after inactivity
 - Host migration if host disconnects
 
 ---
