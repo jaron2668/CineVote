@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import ws, { playerId } from "../socket.js";
+import ws from "../socket.js";
 import {
     WebSocketMessage as WSM,
     type ForceFinishVotingData,
@@ -75,7 +75,7 @@ export default function Voting({ room }: VotingProps) {
                 <div className="waiting">
                     Voting finished. Waiting for other players...
                 </div>
-                {playerId === room.hostId && (
+                {room.host && (
                     <div>
                         <button onClick={forceEndVoting}>
                             Force End of Voting
@@ -92,10 +92,14 @@ export default function Voting({ room }: VotingProps) {
             <h2>{movie.title}</h2>
 
             <div className="voting-buttons">
-                <button onClick={() => handleVote(2)}>👍👍</button>
-                <button onClick={() => handleVote(1)}>👍</button>
-                <button onClick={() => handleVote(-1)}>👎</button>
-                <button onClick={() => handleVote(-2)}>👎👎</button>
+                <button onClick={() => handleVote(2)}>
+                    {"\u{1F44D}\u{1F44D}"}
+                </button>
+                <button onClick={() => handleVote(1)}>{"\u{1F44D}"}</button>
+                <button onClick={() => handleVote(-1)}>{"\u{1F44E}"}</button>
+                <button onClick={() => handleVote(-2)}>
+                    {"\u{1F44E}\u{1F44E}"}
+                </button>
             </div>
 
             <p>

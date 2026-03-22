@@ -2,7 +2,7 @@ import http from "http";
 import { Server } from "socket.io";
 
 import { backendPort } from "../../shared/config.js";
-import { setupWebSocketHandlers } from "./websocketHandlers.js";
+import { setupWebSocketHandlers } from "./websocket/websocketHandlers.js";
 
 const httpServer = http.createServer();
 

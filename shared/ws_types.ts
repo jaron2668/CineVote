@@ -90,5 +90,5 @@ export type BackToLobbyStateData = {
 
 export type KickPlayerData = {
     roomId: string;
-    playerId: string;
+    playerIndex: number;
 };

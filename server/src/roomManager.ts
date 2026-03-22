@@ -1,10 +1,11 @@
 import type { Room } from "../../shared/model/room.js";
-import type { Player } from "../../shared/model/player.js";
-import { ServerRoom } from "./serverRoom.js";
+import type { Player } from "./model/player.js";
+import { ServerRoom } from "./model/serverRoom.js";
 import { generateRandomCode } from "./utils.js";
 import { Server } from "socket.io";
 import { WebSocketMessage as WSM } from "../../shared/ws_types.js";
 import { addPhaseTime, votePhaseTime } from "../../shared/config.js";
+import { emitRoomUpdate } from "./websocket/websocketHelper.js";
 
 /**
  * Global room storage
@@ -40,21 +41,21 @@ export function createRoom(hostId: string): string {
  *
  * @param {string} roomId - The room code
  * @param {Player} player - The player to add
- * @returns {Room | null} The shared room data if successful, null if room doesn't exist or player already joined
+ * @returns {ServerRoom | null} The ServerRoom data if successful, null if room doesn't exist or player already joined
  */
-export function joinRoom(roomId: string, player: Player): Room | null {
-    const room = getRoom(roomId);
-    if (!room) {
+export function joinRoom(roomId: string, player: Player): ServerRoom | null {
+    const serverRoom = getServerRoom(roomId);
+    if (!serverRoom) {
         console.log(`Failed to join room: room ${roomId} does not exist`);
         return null;
     }
-    if (room.players.includes(player)) {
+    if (serverRoom.players.includes(player)) {
         return null;
     }
 
     console.log(`Player ${player.id} (${player.name}) joining room ${roomId}`);
-    room.players.push(player);
-    return room;
+    serverRoom.players.push(player);
+    return serverRoom;
 }
 
 /**
@@ -64,11 +65,12 @@ export function joinRoom(roomId: string, player: Player): Room | null {
  * If the room doesn't exist, returns null.
  *
  * @param {string} roomId - The room code
+ * @param {string} playerId - Id for the player the data is for
  * @returns {Room | null} The shared room data if found, null otherwise
  */
-export function getRoom(roomId: string): Room | null {
-    const room = rooms[roomId];
-    return room ? room.toRoom() : null;
+export function getRoom(roomId: string, playerId: string): Room | null {
+    const room = getServerRoom(roomId);
+    return room ? room.toRoom(playerId) : null;
 }
 
 /**
@@ -98,14 +100,14 @@ export function removePlayerFromRoom(
     roomId: string,
     playerId: string,
 ): boolean {
-    const room = rooms[roomId];
+    const room = getServerRoom(roomId);
     if (!room) return false;
 
     const playerIndex = room.players.findIndex((p) => p.id === playerId);
     if (playerIndex !== -1) {
         room.players.splice(playerIndex, 1);
         if (room.players.length === 0) {
-            delete rooms[roomId];
+            delete rooms[roomId]; // TODO: add a function for that
             console.log(`Deleted room ${roomId}`);
         }
         return true;
@@ -124,11 +126,12 @@ export function transitionToAddPhase(room: ServerRoom, wss: Server): void {
     const now = Date.now();
     room.phaseEndTime = now + addPhaseTime;
 
+    // Timeout for auto transition
     const timeoutId = setTimeout(() => {
         if (room.phase !== "add") return;
         room.phase = "vote";
         room.clearTimeoutId("addPhaseTimeout");
-        wss.to(room.id).emit(WSM.RoomUpdate, room.toRoom());
+        emitRoomUpdate(wss, room.id);
     }, addPhaseTime);
 
     room.setTimeoutId("addPhaseTimeout", timeoutId);
@@ -146,11 +149,12 @@ export function transitionToVotingPhase(room: ServerRoom, wss: Server): void {
     const now = Date.now();
     room.phaseEndTime = now + votePhaseTime;
 
+    // Timeout for auto transition
     const timeoutId = setTimeout(() => {
         if (room.phase !== "vote") return;
         room.phase = "results";
         room.clearTimeoutId("votePhaseTimeout");
-        wss.to(room.id).emit(WSM.RoomUpdate, room.toRoom());
+        emitRoomUpdate(wss, room.id);
     }, votePhaseTime);
 
     room.setTimeoutId("votePhaseTimeout", timeoutId);

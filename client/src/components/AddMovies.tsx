@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import ws from "../socket.js";
-import { playerId } from "../socket.js";
 import {
     WebSocketMessage as WSM,
     type AddMovieData,
@@ -76,8 +75,8 @@ export default function AddMovies({ room }: AddMoviesProps) {
                 ))}
             </ul>
 
-            {playerId === room.hostId &&
-                movies.length > 0 && ( // maybe use room.movies instead but it is currently only synced after add phase is finished
+            {room.host &&
+                movies.length > 0 && ( // TODO: maybe use room.movies instead but it is currently only synced after add phase is finished
                     <button onClick={startVoting}>Start Voting</button>
                 )}
         </div>

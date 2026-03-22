@@ -1,4 +1,4 @@
-import type { Movie } from "../../shared/model/movie.js";
+import type { Movie } from "../../../shared/model/movie.js";
 
 /**
  * Server-side representation of a movie in a voting room.

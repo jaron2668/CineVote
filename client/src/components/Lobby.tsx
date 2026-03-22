@@ -1,12 +1,10 @@
 import ws from "../socket.js";
-import { playerId } from "../socket.js";
 import {
     WebSocketMessage as WSM,
     type LeaveRoomData,
     type StartAddPhaseData,
     type KickPlayerData,
 } from "../../../shared/ws_types.js";
-import type { Player } from "../../../shared/model/player.js";
 import type { Room } from "../../../shared/model/room.js";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -61,10 +59,10 @@ export default function Lobby({ room }: LobbyProps) {
         navigate("/");
     };
 
-    const kickPlayer = (targetPlayerId: string) => {
+    const kickPlayer = (targetPlayerIndex: number) => {
         const data: KickPlayerData = {
             roomId: room.id,
-            playerId: targetPlayerId,
+            playerIndex: targetPlayerIndex,
         };
         ws.emit(WSM.KickPlayer, data);
     };
@@ -94,12 +92,13 @@ export default function Lobby({ room }: LobbyProps) {
                 </button>
             </div>
             <ul className="player-list">
-                {room.players.map((p: Player) => (
-                    <li key={p.id}>
-                        <span>{p.name}</span>
-                        {playerId === room.hostId && p.id !== playerId && (
+                {room.players.map((p: string, index: number) => (
+                    <li>
+                        <span>{p}</span>
+                        {/*p.id !== playerId replaced with index !== 0    not sure if this will work*/}
+                        {room.host && index !== 0 && (
                             <button
-                                onClick={() => kickPlayer(p.id)}
+                                onClick={() => kickPlayer(index)}
                                 className="kick-btn"
                                 title="Kick player"
                             >
@@ -110,7 +109,7 @@ export default function Lobby({ room }: LobbyProps) {
                 ))}
             </ul>
 
-            {playerId === room.hostId && (
+            {room.host && (
                 <button onClick={startAddPhase}>Start Adding Movies</button>
             )}
         </div>

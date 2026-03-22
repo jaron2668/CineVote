@@ -1,5 +1,5 @@
 import { Server } from "socket.io";
-import type { Player } from "../../shared/model/player.js";
+import type { Player } from "../model/player.js";
 import {
     WebSocketMessage as WSM,
     type CreateRoomData,
@@ -17,7 +17,7 @@ import {
     type BackToLobbyStateData,
     type LeaveRoomData,
     type KickPlayerData,
-} from "../../shared/ws_types.js";
+} from "../../../shared/ws_types.js";
 import {
     rooms,
     createRoom,
@@ -29,55 +29,11 @@ import {
     transitionToAddPhase,
     transitionToVotingPhase,
     finishVotingPhase,
-} from "./roomManager.js";
-import type { Room } from "../../shared/model/room.js";
-import type { ServerRoom } from "./serverRoom.js";
-import { ServerMovie } from "./serverMovie.js";
-
-// ========================
-// === Helper Functions ===
-// ========================
-
-/**
- * Emit room state updates to all connected players in a room.
- * Handles conversion from ServerRoom to clientside Room format.
- * @param wss - Socket.IO server instance
- * @param roomId - ID of the room
- * @param room - Room data (ServerRoom or Room format)
- */
-function emitRoomUpdate(
-    wss: Server,
-    roomId: string,
-    room: ServerRoom | Room,
-): void {
-    if ("toRoom" in room) {
-        // server room
-        wss.to(roomId).emit(WSM.RoomUpdate, room.toRoom());
-    } else {
-        // client room
-        wss.to(roomId).emit(WSM.RoomUpdate, room);
-    }
-}
-
-/**
- * Checks if the requesting player is the room host.
- * @param ws - Socket connection with player ID in ws.data.playerId
- * @param room - (Server)Room to check
- * @returns true if player is host, false otherwise
- */
-function isHostAuth(ws: any, room: ServerRoom | Room): boolean {
-    return room.hostId === ws.data.playerId;
-}
-
-/**
- * Checks if room is in a specific phase.
- * @param room - (Server)Room to check
- * @param expectedPhase - Phase to check for ("lobby", "add", "vote", "results")
- * @returns true if room is in expected phase, false otherwise
- */
-function isPhase(room: ServerRoom | Room, expectedPhase: string): boolean {
-    return room.phase === expectedPhase;
-}
+} from "../roomManager.js";
+import type { Room } from "../../../shared/model/room.js";
+import type { ServerRoom } from "../model/serverRoom.js";
+import { ServerMovie } from "../model/serverMovie.js";
+import { emitRoomUpdate, isHostAuth, isPhase } from "./websocketHelper.js";
 
 // =========================
 // === Handler Functions ===
@@ -143,7 +99,7 @@ const handleJoinRoom =
         if (!room) return;
 
         ws.join(roomId);
-        emitRoomUpdate(wss, roomId, room);
+        emitRoomUpdate(wss, roomId);
     };
 
 /**
@@ -176,13 +132,13 @@ const handleRejoinRoom =
 const handleLeaveRoom =
     (wss: Server, ws: any) =>
     ({ roomId }: LeaveRoomData) => {
-        const room = getRoom(roomId);
+        const room = getServerRoom(roomId);
         if (!room) return;
 
         if (removePlayerFromRoom(room.id, ws.data.playerId)) {
             console.log(`Player ${ws.data.playerId} left room ${roomId}`);
             ws.leave(roomId);
-            emitRoomUpdate(wss, roomId, room);
+            emitRoomUpdate(wss, roomId);
         }
     };
 
@@ -201,7 +157,7 @@ const handleStartAddPhase =
         if (!isPhase(serverRoom, "lobby")) return;
 
         transitionToAddPhase(serverRoom, wss);
-        emitRoomUpdate(wss, roomId, serverRoom);
+        emitRoomUpdate(wss, roomId);
     };
 
 /**
@@ -247,7 +203,7 @@ const handleStartVoting =
         }
 
         transitionToVotingPhase(serverRoom, wss);
-        emitRoomUpdate(wss, roomId, serverRoom);
+        emitRoomUpdate(wss, roomId);
     };
 
 /**
@@ -298,7 +254,7 @@ const handlePlayerFinishedVoting =
 
         if (room.finishedPlayers.length === room.players.length) {
             finishVotingPhase(room);
-            emitRoomUpdate(wss, roomId, room);
+            emitRoomUpdate(wss, roomId);
         }
     };
 
@@ -317,7 +273,7 @@ const handleForceFinishVoting =
         if (!isPhase(room, "vote")) return;
 
         finishVotingPhase(room);
-        emitRoomUpdate(wss, roomId, room);
+        emitRoomUpdate(wss, roomId);
     };
 
 /**
@@ -333,7 +289,7 @@ const handleBackToLobbyState =
         if (!room) return;
         if (!isHostAuth(ws, room)) return;
         resetToLobby(roomId);
-        emitRoomUpdate(wss, roomId, room);
+        emitRoomUpdate(wss, roomId);
     };
 
 /**
@@ -345,12 +301,13 @@ const handleBackToLobbyState =
  */
 const handleKickPlayer =
     (wss: Server, ws: any) =>
-    async ({ roomId, playerId }: KickPlayerData) => {
+    async ({ roomId, playerIndex }: KickPlayerData) => {
         const room = getServerRoom(roomId);
         if (!room) return;
         if (!isHostAuth(ws, room)) return;
         if (room.phase !== "lobby") return;
-
+        const playerId = room.players[playerIndex]?.id;
+        if (!playerId) return;
         if (removePlayerFromRoom(roomId, playerId)) {
             console.log(`Player ${playerId} kicked from room ${roomId}`);
             // remove player socket from room
@@ -365,7 +322,7 @@ const handleKickPlayer =
                 }
             }
             //wss.to(playerId).emit(WSM.PlayerKicked);
-            emitRoomUpdate(wss, roomId, room);
+            emitRoomUpdate(wss, roomId);
         }
     };
 

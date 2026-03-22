@@ -1,23 +1,21 @@
-import type { Room } from "../../shared/model/room.js";
+import type { Player } from "./player.js";
+import type { Room } from "../../../shared/model/room.js";
 import type { ServerMovie } from "./serverMovie.js";
 
 /**
- * Server-side room class that extends the shared Room interface
+ * Server-side room class
  *
  * This class is used internally on the server to track additional state
- * that should not be transmitted to clients. It implements the Room interface
- * to guarantee compatibility with the shared type system.
+ * that should not be transmitted to clients.
  *
- * When sending room data to clients, use the toRoom() method to convert
- * to the shared Room type, which excludes server-only properties.
+ * When sending room data to clients, use the toRoom(playerId) method to convert
+ * to the shared Room type for a specific player.
  *
- * @class ServerRoom
- * @implements {Room}
  */
-export class ServerRoom implements Room {
+export class ServerRoom {
     id: string;
     hostId: string;
-    players: any[];
+    players: Player[];
     movies: Record<string, ServerMovie>;
     phase: "lobby" | "add" | "vote" | "results";
     phaseEndTime: number;
@@ -29,7 +27,6 @@ export class ServerRoom implements Room {
     /**
      * Create a new ServerRoom instance
      *
-     * @constructor
      * @param {string} id - Unique room code
      * @param {string} hostId - Player ID of the host/creator
      */
@@ -111,11 +108,11 @@ export class ServerRoom implements Room {
      *
      * @returns {Room} A new Room object with only the shared properties
      */
-    toRoom(): Room {
+    toRoom(playerId: string): Room {
         return {
             id: this.id,
-            hostId: this.hostId,
-            players: this.players,
+            host: this.hostId === playerId,
+            players: this.players.map((p) => p.name),
             movies: Object.fromEntries(
                 Object.entries(this.movies).map(([key, serverMovie]) => [
                     key,
@@ -124,7 +121,7 @@ export class ServerRoom implements Room {
             ),
             phase: this.phase,
             phaseEndTime: this.phaseEndTime,
-            finishedPlayers: this.finishedPlayers,
+            finishedPlayers: this.finishedPlayers.length,
         };
     }
 }

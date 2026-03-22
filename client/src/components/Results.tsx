@@ -4,7 +4,6 @@ import {
     type BackToLobbyStateData,
 } from "../../../shared/ws_types.js";
 import ws from "../socket.js";
-import { playerId } from "../socket.js";
 
 interface ResultsProps {
     room: Room;
@@ -32,7 +31,7 @@ export default function Results({ room }: ResultsProps) {
                     </li>
                 ))}
             </ul>
-            {playerId === room.hostId && (
+            {room.host && (
                 <div>
                     <button onClick={reset}>Back to lobby</button>
                 </div>
