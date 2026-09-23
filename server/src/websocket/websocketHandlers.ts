@@ -11,6 +11,8 @@ import {
     type PlayerVoteData,
     type PlayerFinishedVotingData,
     type ForceFinishVotingData,
+    type GetRoomStatusData,
+    type GetRoomStatusCallback,
     type GetPlayerInRoomStatusData,
     type GetPlayerInRoomStatusCallback,
     type RejoinRoomData,
@@ -78,6 +80,22 @@ const handleGetPlayerInRoomStatus =
         else cb("not-joined");
     };
 
+const handleGetRoomStatus =
+    (wss: Server, ws: any) =>
+    ({ roomId }: GetRoomStatusData, cb: GetRoomStatusCallback) => {
+        const room = getServerRoom(roomId);
+        if (!room) {
+            cb("non-existent");
+            return;
+        }
+        if (room.phase == "lobby") {
+            cb("lobby");
+            return;
+        } else {
+            cb("ingame");
+        }
+    };
+
 /**
  * Handler: Player joins a room.
  * Adds requesting player to the specified room and broadcasts updated room state.
@@ -112,15 +130,15 @@ const handleJoinRoom =
 const handleRejoinRoom =
     (wss: Server, ws: any) =>
     ({ roomId }: RejoinRoomData) => {
-        const room = rooms[roomId];
-        if (!room) return;
-        const joined = room.players.some(
+        const serverRoom = getServerRoom(roomId);
+        if (!serverRoom) return;
+        const joined = serverRoom.players.some(
             (player) => player.id === ws.data.playerId,
         );
         if (!joined) return;
 
         ws.join(roomId);
-        wss.to(ws.id).emit(WSM.RoomUpdate, room);
+        wss.to(ws.id).emit(WSM.RoomUpdate, serverRoom.toRoom(ws.data.playerId));
     };
 
 /**
@@ -342,6 +360,7 @@ export function setupWebSocketHandlers(wss: Server): void {
         );
 
         ws.on(WSM.CreateRoom, handleCreateRoom(wss, ws));
+        ws.on(WSM.GetRoomStatus, handleGetRoomStatus(wss, ws));
         ws.on(WSM.GetPlayerInRoomStatus, handleGetPlayerInRoomStatus(wss, ws));
         ws.on(WSM.JoinRoom, handleJoinRoom(wss, ws));
         ws.on(WSM.RejoinRoom, handleRejoinRoom(wss, ws));

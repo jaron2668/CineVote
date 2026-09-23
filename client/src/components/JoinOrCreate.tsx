@@ -57,8 +57,10 @@ export default function JoinOrCreate() {
                     navigate(`/room/${code}`);
                     break;
                 case "ingame":
+                    console.log("room is ingame. joining aborted");
                     break;
                 default:
+                    console.log("unknown room status");
                     break;
             }
         };

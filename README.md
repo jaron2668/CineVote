@@ -70,7 +70,7 @@ Perfect for groups deciding what to watch together.
 
 ### Prerequisites
 
-- Node.js 19+
+- Node.js 25
 - npm or yarn
 
 ### Installation
@@ -96,7 +96,8 @@ npm install
 #### Backend
 
 ```bash
-npx tsx index.ts
+cd server
+npx tsx src/index.ts
 ```
 
 Backend runs on `http://localhost:3001` by default. Change `shared/config.ts` if needed. \
@@ -107,7 +108,7 @@ CORS is configured with `*`, allowing requests from any origin by default. Chang
 #### Frontend
 
 ```bash
-cd ../client
+cd client
 npm run dev
 ```
 
